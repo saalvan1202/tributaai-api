@@ -35,7 +35,7 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
         descripcion=descripcion,
         codigo=codigo,
         dni=administrado.dni,
-        telefono=administrado.telefono,
+        telefono=telefono,
         verificado='N',
         fecha=fecha
     )
