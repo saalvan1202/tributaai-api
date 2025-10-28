@@ -10,6 +10,10 @@ import pytz
 from services.whats_app_api import Whatsapp
 import random
 
+#------------------------ Puntos importantes a considerar ------------------------>
+#1) Las consultas se pueden hacer desde cualquier dispositivo, el registro de ella es por dispositivo
+#2) Pero el código de valición se envía la telefono registrado en la base de datos
+
 def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
     whatsapp=Whatsapp()
     zona_peru = pytz.timezone("America/Lima")
