@@ -23,9 +23,10 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     ##Se pueda tener varias consultas con el mismo dni y telefono
     consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
     if not consulta:
-        return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada el día de hoy"})
+        return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada el día de hoy",
+                                     "client":str(administrado.nombres)})
     if consulta.verificado=='S':
-        return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y validada"})
+        return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y validada","client":str(administrado.nombres)})
     elif consulta.verificado=='N':
-        return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y no está validada"})
+        return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y no está validada","client":str(administrado.nombres)})
     return consulta
