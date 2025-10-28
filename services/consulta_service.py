@@ -1,4 +1,5 @@
-from fastapi import HTTPException,JSONResponse
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from database import Base,engine
 from schemas.consulta_schema import ConsultasItem
 from models.consulta import Consulta
