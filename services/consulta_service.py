@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException,JSONResponse
 from database import Base,engine
 from schemas.consulta_schema import ConsultasItem
 from models.consulta import Consulta
@@ -18,13 +18,13 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     whatsapp.whats_text(telefono,"Listo 👍")
     if not administrado:
-        return "El contribuyente no existe"
+        return JSONResponse(content={"message": "El contribuyente no existe"})
     ##Se pueda tener varias consultas con el mismo dni y telefono
     consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
     if not consulta:
-        return "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada el día de hoy"
+        return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada el día de hoy"})
     if consulta.verificado=='S':
-        return "Hemos validado tu DNI, se encontró una consulta tuya registrada y validada"
+        return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y validada"})
     elif consulta.verificado=='N':
-        return "Hemos validado tu DNI, se encontró una consulta tuya registrada y no está validada"
+        return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y no está validada"})
     return consulta
