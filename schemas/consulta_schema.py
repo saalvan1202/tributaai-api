@@ -10,3 +10,5 @@ class ConsultasItem(BaseModel):
     telefono:int
     verificado:str
     fecha:date
+    class Config:
+        from_attributes = True 

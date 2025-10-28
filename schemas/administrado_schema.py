@@ -10,6 +10,8 @@ class AdministradoItem(BaseModel):
     dni:int
     gmail:str
     cod_administrado:Optional[str] = None
+    class Config:
+        from_attributes = True 
 
 class AdministradoCreate(BaseModel):
     nombres:str
@@ -18,4 +20,6 @@ class AdministradoCreate(BaseModel):
     telefono:int
     dni:int
     gmail:str
+    class Config:
+        from_attributes = True 
     
