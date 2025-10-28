@@ -30,7 +30,7 @@ def update(data:AdministradoItem,db:Session=Depends(get_db)):
 def delete(id:int,db:Session=Depends(get_db)):
     administrado=delete_administrado(id,db)
     if not administrado:
-        return HTTPException(detail="No se encontró el administrado",status_code=400)
+        return HTTPException(detail="No se encontró el administrado",status_code=200)
     return administrado
 
 #TEST

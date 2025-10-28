@@ -6,20 +6,25 @@ from models.administrado import Administrado
 from sqlalchemy.orm import Session
 from datetime import datetime as dt
 import pytz
-
+from services.whats_app_api import Whatsapp
 
 def validar_consulta(db:Session,dni:int,telefono:int):
     zona_peru = pytz.timezone("America/Lima")
     fecha_actual = dt.now(zona_peru)
     fecha = fecha_actual.strftime("%Y/%m/%d")
+    whatsapp=Whatsapp()
+    whatsapp.whats_text(telefono,"*Estoy validando tu documento*. Dame un momento, por favor  🙂")
     #------------------------Validamos la identidad del usuario--------------------->
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
+    whatsapp.whats_text(telefono,"Listo 👍")
     if not administrado:
         return "El contribuyente no existe"
     ##Se pueda tener varias consultas con el mismo dni y telefono
     consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
     if not consulta:
-        return HTTPException(status_code=404,detail="No se encontró la consulta")
+        return "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada el día de hoy"
     if consulta.verificado=='S':
-        return "Este usuario ya tiene un consulta hoy verficada"
+        return "Hemos validado tu DNI, se encontró una consulta tuya registrada y validada"
+    elif consulta.verificado=='N':
+        return "Hemos validado tu DNI, se encontró una consulta tuya registrada y no está validada"
     return consulta
