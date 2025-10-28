@@ -11,5 +11,5 @@ def validate_agent(dni:int,telefono:int,db:Session=Depends(get_db)):
     return validar_consulta(db,dni,telefono)
 
 @router.post("/registrar-consulta")
-def create_consulta(dni:int,descripcion:str,db:Session=Depends(get_db)):
-    return registrar_consulta(db,dni,descripcion)
+def create_consulta(dni:int,descripcion:str,telefono:int,db:Session=Depends(get_db)):
+    return registrar_consulta(db,dni,descripcion,telefono)
