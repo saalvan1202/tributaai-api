@@ -18,7 +18,7 @@ def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
-    whatsapp.whats_text(administrado.telefono,f"*Validando Código...*")
+    whatsapp.whats_text(telefono,f"*Validando Código...*")
     consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
     if consulta_registrada:
         if consulta_registrada.verificado=='S':
