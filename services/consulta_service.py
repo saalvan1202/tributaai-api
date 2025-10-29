@@ -10,10 +10,31 @@ import pytz
 from services.whats_app_api import Whatsapp
 import random
 
+def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
+    whatsapp=Whatsapp()
+    zona_peru = pytz.timezone("America/Lima")
+    fecha_actual = dt.now(zona_peru)
+    fecha = fecha_actual.strftime("%Y/%m/%d")
+    administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
+    if not administrado:
+        return JSONResponse(content={"message":"El contribuyente no existe"})
+    whatsapp.whats_text(administrado.telefono,f"*Validando Código...*")
+    consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
+    if consulta_registrada:
+        if consulta_registrada.verificado=='S':
+            return JSONResponse(content={"message":"El contribuyente tiene un consulta registrada el día de hoy con este dispositivo","client":str(administrado.nombres)})
+    if consulta_registrada.codigo==codigo:
+        consulta_registrada.verificado='S'
+        db.add(consulta_registrada)
+        db.commit()
+        db.refresh(consulta_registrada)
+        return JSONResponse(content={"message":"El código fue validado correctamente.","client":str(administrado.nombres)})
+    return JSONResponse(content={"message":"El código que adjuntaste no es correcto, verifique el código que se mandó a su número.","client":str(administrado.nombres)})
+
+
 #------------------------ Puntos importantes a considerar ------------------------>
 #1) Las consultas se pueden hacer desde cualquier dispositivo, el registro de ella es por dispositivo
 #2) Pero el código de valición se envía la telefono registrado en la base de datos
-
 def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
     whatsapp=Whatsapp()
     zona_peru = pytz.timezone("America/Lima")
