@@ -3,10 +3,8 @@ from services.consulta_service import validar_consulta,registrar_consulta, valid
 from sqlalchemy.orm import Session
 from schemas.consulta_schema import ConsultasItem
 from database import get_db
-import joblib
 import numpy as np
 from pydantic import BaseModel
-import os
 router=APIRouter(prefix="/consulta",tags=["Consulta"])
 # response_model=list[ConsultasItem]
 @router.get("/validar-agente")
