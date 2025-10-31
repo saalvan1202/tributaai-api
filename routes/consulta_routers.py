@@ -3,7 +3,10 @@ from services.consulta_service import validar_consulta,registrar_consulta, valid
 from sqlalchemy.orm import Session
 from schemas.consulta_schema import ConsultasItem
 from database import get_db
-
+import joblib
+import numpy as np
+from pydantic import BaseModel
+import os
 router=APIRouter(prefix="/consulta",tags=["Consulta"])
 # response_model=list[ConsultasItem]
 @router.get("/validar-agente")
@@ -17,3 +20,4 @@ def create_consulta(dni:int,descripcion:str,telefono:int,db:Session=Depends(get_
 @router.post("/valirdar-codigo")
 def validate_code(dni:int,telefono:int,codigo:int,db:Session=Depends(get_db)):
     return validar_codigo_whatsapp(db,codigo,dni,telefono)
+    

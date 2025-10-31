@@ -5,12 +5,14 @@ from schemas.consulta_schema import ConsultasItem
 from models.consulta import Consulta
 from models.administrado import Administrado
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from datetime import datetime as dt
 import pytz
 from services.whats_app_api import Whatsapp
 import random
 
 def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
+    tipo_deudas=''
     whatsapp=Whatsapp()
     zona_peru = pytz.timezone("America/Lima")
     fecha_actual = dt.now(zona_peru)
@@ -28,9 +30,26 @@ def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
         db.add(consulta_registrada)
         db.commit()
         db.refresh(consulta_registrada)
-        return JSONResponse(content={"message":"El código fue validado correctamente.","client":str(administrado.nombres)})
+        query = text("""
+        SELECT DISTINCT 
+            cuotas_deudas_administrado.descripcion_tipo AS tipo_deuda
+        FROM cuotas_deudas_administrado
+        INNER JOIN deudas_administrado 
+            ON deudas_administrado.id_deudas_administrado = cuotas_deudas_administrado.id_deudas_administrado
+        LEFT JOIN predio_urbano 
+            ON cuotas_deudas_administrado.cod_predio_urbano = predio_urbano.cod_predio_urbano
+        WHERE cuotas_deudas_administrado.codigo_administrado = :codigo
+          AND cuotas_deudas_administrado.estado_deuda <> 'I'
+          AND cuotas_deudas_administrado.estado_deuda = 'P'
+          AND cuotas_deudas_administrado.estado = 'A'
+    """)
+        result = db.execute(query, {"codigo": administrado.cod_administrado}).fetchall()
+        if not result:     
+            return JSONResponse(content={"message":f"El código fue validado correctamente. También se comprobó que el contribuyente {administrado.cod_administrado} no tiene deudas pendientes","client":str(administrado.nombres)})
+        for item in result:
+            tipo_deudas=tipo_deudas + ',' + str(item)
+        return JSONResponse(content={"message":f"El código fue validado correctamente. El contribuyente {administrado.cod_administrado} tiene las siguientes deudas: {tipo_deudas}","client":str(administrado.nombres)})    
     return JSONResponse(content={"message":"El código que adjuntaste no es correcto, verifique el código que se mandó a su número.","client":str(administrado.nombres)})
-
 
 #------------------------ Puntos importantes a considerar ------------------------>
 #1) Las consultas se pueden hacer desde cualquier dispositivo, el registro de ella es por dispositivo
