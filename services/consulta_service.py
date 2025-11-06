@@ -40,19 +40,21 @@ def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
     whatsapp.whats_text(telefono,f"*Validando Código...*")
     consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
     if consulta_registrada:
-        if consulta_registrada.verificado=='S':
-            return JSONResponse(content={"message":"El contribuyente tiene un consulta registrada el día de hoy con este dispositivo","client":str(administrado.nombres)})
-    if consulta_registrada.codigo==codigo:
-        consulta_registrada.verificado='S'
-        db.add(consulta_registrada)
-        db.commit()
-        db.refresh(consulta_registrada)
         result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
-        if not result:     
-            return JSONResponse(content={"message":f"El código fue validado correctamente. También se comprobó que el contribuyente {administrado.cod_administrado} no tiene deudas pendientes","client":str(administrado.nombres)})
-        return JSONResponse(content={"message":f"El código fue validado correctamente. El contribuyente {administrado.cod_administrado} tiene las siguientes deudas: {tipo_deudas}","client":str(administrado.nombres)})    
-    return JSONResponse(content={"message":"El código que adjuntaste no es correcto, verifique el código que se mandó a su número.","client":str(administrado.nombres)})
-
+        if consulta_registrada.verificado=='S':
+            if not result:     
+                return JSONResponse(content={"message":f"El contribuyente tiene un consulta registrada y validada el día de hoy con este dispositivo. También se comprobó que el contribuyente {administrado.cod_administrado} no tiene deudas pendientes","client":str(administrado.nombres)})
+            return JSONResponse(content={"message":"El contribuyente tiene un consulta registrada y validada el día de hoy con este dispositivo","client":str(administrado.nombres)})
+        if consulta_registrada.codigo==codigo:
+            consulta_registrada.verificado='S'
+            db.add(consulta_registrada)
+            db.commit()
+            db.refresh(consulta_registrada)
+            if not result:     
+                return JSONResponse(content={"message":f"El código fue validado correctamente. También se comprobó que el contribuyente {administrado.cod_administrado} no tiene deudas pendientes","client":str(administrado.nombres)})
+            return JSONResponse(content={"message":f"El código fue validado correctamente. El contribuyente {administrado.cod_administrado} tiene las siguientes deudas: {result}","client":str(administrado.nombres)})    
+        return JSONResponse(content={"message":"El código que adjuntaste no es correcto, verifique el código que se mandó a su número.","client":str(administrado.nombres)})
+    return JSONResponse(content={"message":"El contribuyente no tiene una deuda registrada el día de hoy, deseas registrar una consulta?"})
 #<------------------------ Puntos importantes a considerar ------------------------>
 #1) Las consultas se pueden hacer desde cualquier dispositivo, el registro de ella es por dispositivo
 #2) Pero el código de valición se envía la telefono registrado en la base de datos
