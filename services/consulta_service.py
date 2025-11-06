@@ -14,14 +14,14 @@ from services.whats_app_api import Whatsapp
 import random
 from repositories.consultas_repositoty import ConsultasRepo
 
-def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:TipoDeudas,):
+def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     print("Se inició")
     whatsapp=Whatsapp()
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
     whatsapp.whats_text(telefono,"Espere un momento, estamos revisando sus deudas...")
-    result=ConsultasRepo.consulta_deudas(db,tipo_deudas.tipos_deudas,administrado.cod_administrado)
+    result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
     if not result:
         return JSONResponse(content={"message":"El contribuyente no cuenta con deudas en ese momento."})
     result = [dict(row._mapping) for row in result]
@@ -72,8 +72,8 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
             if not result:
                 return JSONResponse(content={"message": "Hemos validado tu DNI, se encontró una consulta tuya registrada y validada con este dispositivo. Recordando también que el no tiene ninguan deuda pendiente.","client":str(administrado.nombres)}) 
             return JSONResponse(content={"message": f"Hemos validado tu DNI, se encontró una consulta tuya registrada y validada con este dispositivo. Tus tipos de deudas son {result}","client":str(administrado.nombres)})
-    elif consulta_registrada.verificado=='N':
-            return JSONResponse(content={"consulta":str(consulta_registrada.dni),"message":"El contribuyente tiene un consulta registrada el día de hoy con este dispositivo, pero no está verificada","client":str(administrado.nombres)})
+        elif consulta_registrada.verificado=='N':
+                return JSONResponse(content={"consulta":str(consulta_registrada.dni),"message":"El contribuyente tiene un consulta registrada el día de hoy con este dispositivo, pero no está verificada","client":str(administrado.nombres)})
     codigo=random.randint(100000, 999999)
     consulta=Consulta(
         id_administrado=administrado.id,

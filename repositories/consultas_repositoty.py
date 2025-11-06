@@ -7,7 +7,7 @@ class ConsultasRepo():
         tipo_deudas=''
         query = text("""
         SELECT DISTINCT 
-            cuotas_deudas_administrado.descripcion_tipo AS tipo_deuda
+            deudas_administrado.descripcion_tipo AS tipo_deuda
         FROM cuotas_deudas_administrado
         INNER JOIN deudas_administrado 
             ON deudas_administrado.id_deudas_administrado = cuotas_deudas_administrado.id_deudas_administrado
@@ -25,7 +25,7 @@ class ConsultasRepo():
             tipo_deudas=tipo_deudas + ',' + str(item)
         return tipo_deudas
     @staticmethod
-    def consulta_deudas(db:Session,tipos:list,codigo:str):
+    def consulta_deudas(db:Session,tipos:int,codigo:str):
         query=text("""select "cuotas_deudas_administrado".id_deudas_administrado as id_deu,"cuotas_deudas_administrado".*, 
                 coalesce(trim(predio_urbano.cod_predio_urbano||' '||predio_urbano.direccion),cuotas_deudas_administrado.cod_predio_urbano) as direccion_predio 
                 ,"deudas_administrado"."nro_anexo", 
@@ -37,7 +37,7 @@ class ConsultasRepo():
                 and "cuotas_deudas_administrado"."estado_deuda" <> 'I' 
                 and "cuotas_deudas_administrado"."estado_deuda" = 'P' 
                 and "cuotas_deudas_administrado"."estado" = 'A' 
-                and "deudas_administrado"."id_tipo_deudas_administrado" =  any (:tipos)
+                and "deudas_administrado"."id_tipo_deudas_administrado" = :tipos
                 order by "cuotas_deudas_administrado"."anio" asc, "cuotas_deudas_administrado"."tipo" asc, "cuotas_deudas_administrado"."cuota" asc
                 """)
         result = db.execute(query, {"codigo": codigo,"tipos":tipos}).fetchall()

@@ -20,5 +20,5 @@ def validate_code(dni:int,telefono:int,codigo:int,db:Session=Depends(get_db)):
     return validar_codigo_whatsapp(db,codigo,dni,telefono)
 
 @router.post("/deudas-contribuyente")
-def consulta_deuda_tributaria(dni:int,telefono:int,tipos_deudas:TipoDeudas,db:Session=Depends(get_db)):
+def consulta_deuda_tributaria(dni:int,telefono:int,tipos_deudas:int,db:Session=Depends(get_db)):
     return deudas_tributarias(db,telefono,dni,tipos_deudas)
