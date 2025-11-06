@@ -1,12 +1,14 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from collections import defaultdict
 
 class ConsultasRepo():
     @staticmethod
     def tipo_deudas(db:Session,cod_administrado:str):
         tipo_deudas=''
         query = text("""
-        SELECT DISTINCT 
+        SELECT DISTINCT
+            deudas_administrado.id_tipo_deudas_administrado AS id_deuda, 
             deudas_administrado.descripcion_tipo AS tipo_deuda
         FROM cuotas_deudas_administrado
         INNER JOIN deudas_administrado 
@@ -21,8 +23,7 @@ class ConsultasRepo():
         result = db.execute(query, {"codigo": cod_administrado}).fetchall()
         if not result:
             return False
-        for item in result:
-            tipo_deudas=tipo_deudas + ',' + str(item)
+        tipo_deudas = ",".join([f"{row[0]}:{row[1]}" for row in result])
         return tipo_deudas
     @staticmethod
     def consulta_deudas(db:Session,tipos:int,codigo:str):
@@ -44,3 +45,56 @@ class ConsultasRepo():
         if not result:
             return False
         return result
+    import json
+
+    @staticmethod
+    def generar_mensaje_whatsapp(data):
+        deudas = data["deudas"]
+
+        # Eliminar duplicados por año, mes y predio
+        unicas = {(d["anio"], d["mes"], d["predio"]): d for d in deudas}.values()
+
+        # Agrupar por año
+        deudas_por_anio = defaultdict(list)
+        for d in unicas:
+            deudas_por_anio[d["anio"]].append(d)
+
+        predio = list(unicas)[0]["direccion_predio"]
+        codigo = list(unicas)[0]["predio"]
+
+        mensaje = (
+            "📢 *Municipalidad de Tarapoto*\n"
+            "Estimado contribuyente, hemos verificado sus *deudas pendientes de Impuesto Predial*.\n\n"
+            f"🏠 Predio: *{predio}*\n"
+            f"💳 Código: *{codigo}*\n\n"
+            "📅 *Detalle de cuotas pendientes:*\n"
+        )
+
+        total_general = 0
+
+        # Recorrer los años
+        for anio, lista in sorted(deudas_por_anio.items()):
+            lista_ordenada = sorted(lista, key=lambda x: x["mes"])
+            total_anio = sum(d["monto"] for d in lista_ordenada)
+            total_general += total_anio
+
+            mensaje += f"\n📆 *Año {anio}*\n"
+            for d in lista_ordenada:
+                mensaje += f"  🗓 {ConsultasRepo.mes_nombre(d['mes'])} → S/ {d['monto']:.2f}\n"
+            mensaje += f"  💵 *Subtotal {anio}: S/ {total_anio:.2f}*\n"
+
+        mensaje += (
+            f"\n💰 *Total pendiente:* *S/ {total_general:.2f}*\n\n"
+            "Para regularizar su deuda, puede acercarse a la caja municipal o escribirnos para más información.\n\n"
+            "🤝 Gracias por su compromiso con el desarrollo de nuestra ciudad."
+        )
+
+        return mensaje
+
+    @staticmethod
+    def mes_nombre(num):
+        meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+        ]
+        return meses[num - 1]

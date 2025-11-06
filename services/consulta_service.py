@@ -15,18 +15,20 @@ import random
 from repositories.consultas_repositoty import ConsultasRepo
 
 def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
-    print("Se inició")
     whatsapp=Whatsapp()
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
-    whatsapp.whats_text(telefono,"Espere un momento, estamos revisando sus deudas...")
+    whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
     if not result:
         return JSONResponse(content={"message":"El contribuyente no cuenta con deudas en ese momento."})
     result = [dict(row._mapping) for row in result]
     result_serialized = jsonable_encoder(result)
-    return JSONResponse(content={'message':"Las deudas del contribuyente son las siguientes:","deudas":result_serialized})
+    data = {"deudas": result_serialized}
+    mensaje=ConsultasRepo.generar_mensaje_whatsapp(data)
+    whatsapp.whats_text(telefono, mensaje)
+    return JSONResponse(content={'message':"El resumen de deudas fue enviado con exito"})
     
     
 def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
