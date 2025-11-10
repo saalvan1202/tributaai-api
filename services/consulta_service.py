@@ -120,7 +120,7 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if not consulta:
         if administrado.telefono==telefono:
-            return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad, pero no se encontró una consulta tuya registrada con este dispositivo el día de hoy",
+            return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad",
                     "client":str(administrado.nombres)})
         return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada con este dispositivo el día de hoy",
                                      "client":str(administrado.nombres)})
