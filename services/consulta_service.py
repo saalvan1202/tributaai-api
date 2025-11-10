@@ -22,6 +22,8 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     consulta_registrada=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if not consulta_registrada:
         #<-------------------Con la idea que el tiempo de sesión de cada consulta es 24 horas ----->
+        if administrado.telefono==telefono:
+            return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente"})
         return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio"})
     whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
