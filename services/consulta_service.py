@@ -26,7 +26,7 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
     if not result:
-        return JSONResponse(content={"message":"El contribuyente no cuenta con deudas en ese momento."})
+        return JSONResponse(content={"message":"La sesion de la consulta del contribuyente supere el tiempo."})
     result = [dict(row._mapping) for row in result]
     result_serialized = jsonable_encoder(result)
     data = {"deudas": result_serialized}
