@@ -78,7 +78,7 @@ class ConsultasRepo():
             total_anio = sum(d["monto"] for d in lista_ordenada)
             total_general += total_anio
 
-            mensaje += f"\n📆 *Año {anio}*\n"
+            mensaje += f"\n📆 *Año {anio}*\n\n"
             for d in lista_ordenada:
                 mensaje += f"  🗓 {ConsultasRepo.mes_nombre(d['mes'])} → S/ {d['monto']:.2f}\n"
             mensaje += f"  💵 *Subtotal {anio}: S/ {total_anio:.2f}*\n"

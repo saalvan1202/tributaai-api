@@ -5,7 +5,7 @@ from schemas.consulta_schema import ConsultasItem
 from schemas.tipo_deudas_schema import TipoDeudas
 from database import get_db
 from pydantic import BaseModel
-router=APIRouter(prefix="/consulta",tags=["Consulta"])
+router=APIRouter(prefix="/api/v1/consulta",tags=["Consulta"])
 # response_model=list[ConsultasItem]
 @router.get("/validar-agente")
 def validate_agent(dni:int,telefono:int,db:Session=Depends(get_db)):
@@ -15,7 +15,7 @@ def validate_agent(dni:int,telefono:int,db:Session=Depends(get_db)):
 def create_consulta(dni:int,descripcion:str,telefono:int,db:Session=Depends(get_db)):
     return registrar_consulta(db,dni,descripcion,telefono)
 
-@router.post("/valirdar-codigo")
+@router.post("/validar-codigo")
 def validate_code(dni:int,telefono:int,codigo:int,db:Session=Depends(get_db)):
     return validar_codigo_whatsapp(db,codigo,dni,telefono)
 

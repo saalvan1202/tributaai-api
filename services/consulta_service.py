@@ -7,18 +7,22 @@ from schemas.tipo_deudas_schema import TipoDeudas
 from models.consulta import Consulta
 from models.administrado import Administrado
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from datetime import datetime as dt
-import pytz
+from sqlalchemy import text,func
 from services.whats_app_api import Whatsapp
 import random
 from repositories.consultas_repositoty import ConsultasRepo
-
+from utils.methods import time
 def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     whatsapp=Whatsapp()
+    time_now=time.timeActual()
+    fecha=time_now["fecha_validacion"]
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
+    consulta_registrada=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
+    if not consulta_registrada:
+        #<-------------------Con la idea que el tiempo de sesión de cada consulta es 24 horas ----->
+        return JSONResponse(content={"message":"No tienes una consulta registrada el día de hoy"})
     whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
     if not result:
@@ -33,14 +37,13 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     
 def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
     whatsapp=Whatsapp()
-    zona_peru = pytz.timezone("America/Lima")
-    fecha_actual = dt.now(zona_peru)
-    fecha = fecha_actual.strftime("%Y/%m/%d")
+    time_now=time.timeActual()
+    fecha = time_now["fecha_validacion"]
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
     whatsapp.whats_text(telefono,f"*Validando Código...*")
-    consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
+    consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if consulta_registrada:
         result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
         if consulta_registrada.verificado=='S':
@@ -62,14 +65,14 @@ def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
 #2) Pero el código de valición se envía la telefono registrado en la base de datos
 def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
     whatsapp=Whatsapp()
-    zona_peru = pytz.timezone("America/Lima")
-    fecha_actual = dt.now(zona_peru)
-    fecha = fecha_actual.strftime("%Y/%m/%d")
+    time_now=time.timeActual()
+    fecha_registro = time_now["fecha_registro"]
+    fecha_validacion=time_now["fecha_validacion"]
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
     whatsapp.whats_text(administrado.telefono,f"*Espere un momento*, estamos registrando su consulta...")
-    consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
+    consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha_validacion).first()
     if consulta_registrada:
         if consulta_registrada.verificado=='S':
             result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
@@ -86,7 +89,7 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
         dni=administrado.dni,
         telefono=telefono,
         verificado='N',
-        fecha=fecha
+        fecha=fecha_registro
     )
     db.add(consulta)
     db.commit()
@@ -96,17 +99,17 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
     
 def validar_consulta(db:Session,dni:int,telefono:int):
     whatsapp=Whatsapp()
-    zona_peru = pytz.timezone("America/Lima")
-    fecha_actual = dt.now(zona_peru)
-    fecha = fecha_actual.strftime("%Y/%m/%d")
+    time_now=time.timeActual()
+    fecha = time_now["fecha_validacion"]
     whatsapp.whats_text(telefono,"*Estoy validando tu documento*. Dame un momento, por favor  🙂")
     #------------------------Validamos la identidad del usuario--------------------->
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     whatsapp.whats_text(telefono,"Listo 👍")
     if not administrado:
         return JSONResponse(content={"message": "El contribuyente no existe"})
-    ##Se pueda tener varias consultas con el mismo dni y telefono
-    consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,Consulta.fecha==fecha).first()
+    ##Se pueda tener varias consultas con el mismo dni y telefono, pero no en la misma fecha
+    #Tenemos un detalle con el tipo TiemStamp -> Cuando se intenta comparar solo con la fecha tiene que suar el func.date 
+    consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if not consulta:
         return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada con este dispositivo el día de hoy",
                                      "client":str(administrado.nombres)})

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from services.chats_service import get_session_chat,get_messages_chat
 
-router=APIRouter(prefix="/chat",tags=["Chat"])
+router=APIRouter(prefix="/api/v1/chat",tags=["Chat"])
 
 @router.get("/session-chat")
 def session_chat(db:Session=Depends(get_db)):

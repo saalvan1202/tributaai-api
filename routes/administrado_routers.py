@@ -4,7 +4,7 @@ from database import get_db
 from services.administrado_service import get_administrado,create_administrado,get_first_administrado,update_administrado,delete_administrado
 from schemas.administrado_schema import AdministradoItem,AdministradoCreate
 
-router=APIRouter(prefix="/administrado",tags=["Administrado"])
+router=APIRouter(prefix="/api/v1/administrado",tags=["Administrado"])
 
 @router.get("/",response_model=list[AdministradoItem])
 def get(db:Session=Depends(get_db)):
