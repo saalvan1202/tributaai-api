@@ -1,7 +1,7 @@
 import requests
 class Whatsapp():
     def whats_text(self,telefono,message):
-        url = "https://apiwsp.factiliza.com/v1/message/sendtext/NTE5MDE5ODExMjc="
+        url = "https://apiwsp.factiliza.com/v1/message/sendtext/NTE5MTc0MTQ2ODQ="
         payload = {
             "number": '51' + str(telefono),
             "text": str(message)
