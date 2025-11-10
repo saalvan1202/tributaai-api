@@ -98,7 +98,7 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
         db.commit()
         db.refresh(consulta)
         result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
-        return JSONResponse(content={"message":"Se verifico el que el numero registrado es el mismo en el que se está comunicando. Tus tipos de deudas son {result}","client":str(administrado.nombres)})
+        return JSONResponse(content={"message":f"Se verifico el que el numero registrado es el mismo en el que se está comunicando. Tus tipos de deudas son {result}","client":str(administrado.nombres)})
     whatsapp.whats_text(administrado.telefono,f"Este es su código de verificación: {codigo}")
     db.add(consulta)
     db.commit()
