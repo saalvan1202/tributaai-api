@@ -23,10 +23,10 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     if not consulta_registrada:
         #<-------------------Con la idea que el tiempo de sesión de cada consulta es 24 horas ----->
         if administrado.telefono==telefono:
-            result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
-            if not result:
-                return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente. No tienes deudas pedndientes."})
-            return JSONResponse(content={"message":f"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente. Tus deudas pendientes son: {result}"})
+            # result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
+            # if not result:
+            #     return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente. No tienes deudas pedndientes."})
+                return JSONResponse(content={"message":f"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente"})
         return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio"})
     whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
@@ -127,10 +127,10 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     if not consulta:
         if administrado.telefono==telefono:
             result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
-            if not result:
-                return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad. No tienes deudas pendientes",
-                    "client":str(administrado.nombres)})
-            return JSONResponse(content={"message": f"Hemos validado tu DNI y verificado tu identidad. Tus deudas pendientes son las siguientes {result}",
+            # if not result:
+            #     return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad. No tienes deudas pendientes",
+            #         "client":str(administrado.nombres)})
+            return JSONResponse(content={"message": f"Hemos validado tu DNI y verificado tu identidad",
                     "client":str(administrado.nombres)})
         return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada con este dispositivo el día de hoy",
                                      "client":str(administrado.nombres)})
