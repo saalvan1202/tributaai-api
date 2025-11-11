@@ -23,7 +23,10 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     if not consulta_registrada:
         #<-------------------Con la idea que el tiempo de sesión de cada consulta es 24 horas ----->
         if administrado.telefono==telefono:
-            return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente"})
+            result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
+            if not result:
+                return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente. No tienes deudas pedndientes."})
+            return JSONResponse(content={"message":f"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente. Tus deudas pendientes son: {result}"})
         return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio"})
     whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
@@ -93,13 +96,14 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
         verificado='N',
         fecha=fecha_registro
     )
-
     if consulta.telefono==telefono:
         consulta.verificado='S'
         db.add(consulta)
         db.commit()
         db.refresh(consulta)
         result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
+        if not result:
+            return JSONResponse(content={"message":f"Se verifico el que el numero registrado es el mismo en el que se está comunicando. No tienes deudas pendientes","client":str(administrado.nombres)})
         return JSONResponse(content={"message":f"Se verifico el que el numero registrado es el mismo en el que se está comunicando. Tus tipos de deudas son {result}","client":str(administrado.nombres)})
     whatsapp.whats_text(administrado.telefono,f"Este es su código de verificación: {codigo}")
     db.add(consulta)
@@ -122,7 +126,11 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if not consulta:
         if administrado.telefono==telefono:
-            return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad",
+            result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
+            if not result:
+                return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad. No tienes deudas pendientes",
+                    "client":str(administrado.nombres)})
+            return JSONResponse(content={"message": f"Hemos validado tu DNI y verificado tu identidad. Tus deudas pendientes son las siguientes {result}",
                     "client":str(administrado.nombres)})
         return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada con este dispositivo el día de hoy",
                                      "client":str(administrado.nombres)})
