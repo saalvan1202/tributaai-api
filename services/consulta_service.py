@@ -126,11 +126,11 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     consulta=db.query(Consulta).filter(Consulta.dni==dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if not consulta:
         if administrado.telefono==telefono:
-            result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
+            # result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
             # if not result:
             #     return JSONResponse(content={"message": "Hemos validado tu DNI y verificado tu identidad. No tienes deudas pendientes",
             #         "client":str(administrado.nombres)})
-            return JSONResponse(content={"message": f"Hemos validado tu DNI y verificado tu identidad",
+            return JSONResponse(content={"message": f"Hemos identificado que el contribuyente pasa las pruebas de verificacion",
                     "client":str(administrado.nombres)})
         return JSONResponse(content={"message": "Hemos validado tu DNI, pero no se encontró una consulta tuya registrada con este dispositivo el día de hoy",
                                      "client":str(administrado.nombres)})
