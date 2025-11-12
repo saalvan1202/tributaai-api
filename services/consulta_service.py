@@ -96,7 +96,7 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
         verificado='N',
         fecha=fecha_registro
     )
-    if consulta.telefono==telefono:
+    if administrado.telefono==telefono:
         consulta.verificado='S'
         db.add(consulta)
         db.commit()
