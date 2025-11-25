@@ -1,10 +1,7 @@
-from fastapi import Depends,HTTPException,APIRouter
+from fastapi import Depends,APIRouter
 from services.consulta_service import validar_consulta,registrar_consulta, validar_codigo_whatsapp,deudas_tributarias
 from sqlalchemy.orm import Session
-from schemas.consulta_schema import ConsultasItem
-from schemas.tipo_deudas_schema import TipoDeudas
 from database import get_db
-from pydantic import BaseModel
 router=APIRouter(prefix="/api/v1/consulta",tags=["Consulta"])
 # response_model=list[ConsultasItem]
 @router.get("/validar-agente")

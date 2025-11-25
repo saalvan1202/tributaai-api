@@ -1,13 +1,9 @@
-from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-from database import Base,engine
-from schemas.consulta_schema import ConsultasItem
-from schemas.tipo_deudas_schema import TipoDeudas
 from models.consulta import Consulta
 from models.administrado import Administrado
 from sqlalchemy.orm import Session
-from sqlalchemy import text,func
+from sqlalchemy import func
 from services.whats_app_api import Whatsapp
 import random
 from repositories.consultas_repositoty import ConsultasRepo

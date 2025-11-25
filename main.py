@@ -1,5 +1,10 @@
 from fastapi import FastAPI
-from routes import administrado_routers,consulta_routers,chats_routers
+from routes import (administrado_routers,
+                    consulta_routers,chats_routers,
+                    empresa_routers,modulos_routers,
+                    roles_routers,permisos_routers,
+                    agente_routers,
+                    agente_empresa_routers)
 from fastapi.middleware.cors import CORSMiddleware
 #Instancias api
 app = FastAPI()
@@ -19,3 +24,9 @@ app.add_middleware(
 app.include_router(administrado_routers.router)
 app.include_router(consulta_routers.router)
 app.include_router(chats_routers.router)
+app.include_router(empresa_routers.router)
+app.include_router(modulos_routers.router)
+app.include_router(roles_routers.router)
+app.include_router(permisos_routers.router)
+app.include_router(agente_routers.router)
+app.include_router(agente_empresa_routers.router)
