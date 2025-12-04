@@ -28,7 +28,9 @@ def get_session_chat(db:Session):
     #sessions = [{"id":row[0],"avatar": random.randint(0, 4),"ult_message":ult_messages}for row in result]
     return ult_messages
 def get_messages_chat(db:Session,id_session:str):
-    session=db.query(Chat).filter(Chat.session_id==id_session).all()
+    session=db.query(Chat).filter(Chat.session_id==id_session).order_by(Chat.id.asc()).all()
     if not session:
         return "No se encontró menajes en este chat"
     return session
+
+# def create_message_chat()
