@@ -17,7 +17,7 @@ origins = [
     "http://127.0.0.1:5500",
     "http://localhost:5173", 
 ]
-app.add_middleware(AuthMiddleware)
+# app.add_middleware(AuthMiddleware)
 app.add_middleware(ErrorMiddleware)
 app.add_middleware(
     CORSMiddleware,
