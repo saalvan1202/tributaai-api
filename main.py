@@ -7,7 +7,8 @@ from routes import (administrado_routers,
                     agente_empresa_routers,
                     usuarios_routers,
                     derivaciones_routers,
-                    login_routers)
+                    login_routers,
+                    mensajes_routers)
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.auth_middleware import AuthMiddleware
 from middleware.error_middleware import ErrorMiddleware
@@ -40,3 +41,4 @@ app.include_router(agente_empresa_routers.router)
 app.include_router(usuarios_routers.router)
 app.include_router(derivaciones_routers.router)
 app.include_router(login_routers.router)
+app.include_router(mensajes_routers.router)
