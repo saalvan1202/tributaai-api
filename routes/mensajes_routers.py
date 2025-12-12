@@ -13,7 +13,7 @@ router=APIRouter(prefix="/api/v1/mensajes",tags=['Mensajes'])
 async def save(data:MensajesSchema,db:Session=Depends(get_db)):
     mensaje=save_mensaje(db,data)
     await manager.broadcast(data.model_dump())
-    JSONResponse(content={
+    return JSONResponse(content={
         "message":"El mensaje fue enviado correctamente",
         "status":200
     }) 
