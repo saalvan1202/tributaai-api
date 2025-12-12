@@ -9,10 +9,8 @@ from web.web_socket import manager
 router=APIRouter(prefix="/api/v1/mensajes",tags=['Mensajes'])
 
 @router.post("/")
-async def save(data:MensajesSchema,db:Session=Depends(get_db)):
-    response=await save_mensaje(db,data)
-    await manager.broadcast(data.model_dump())
-    return response
+def save(data:MensajesSchema,db:Session=Depends(get_db)):
+    return save_mensaje(db,data)
 
 @router.get("/")
 def llamar(id_contact:str,db:Session=Depends(get_db)):
