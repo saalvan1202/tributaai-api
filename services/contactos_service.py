@@ -4,9 +4,8 @@ from models.mensajes import Mensajes
 from schemas.mensajes_schema import MensajesSchema
 from fastapi.responses import JSONResponse
 from sqlalchemy import func, and_
-from web.web_socket import manager
 
-async def save_mensaje(db:Session,data:MensajesSchema):
+def save_mensaje(db:Session,data:MensajesSchema):
     contactos=db.query(Contactos).filter(Contactos.wa_id==data.wa_id).first()
     if not contactos:
         contactos=Contactos(
@@ -32,11 +31,7 @@ async def save_mensaje(db:Session,data:MensajesSchema):
     db.add(mensaje)
     db.commit()
     db.refresh(mensaje)
-    await manager.broadcast(data.model_dump())
-    return JSONResponse(content={
-        "message":"El mensaje fue enviado correctamente",
-        "status":200
-    })    
+    return mensaje   
 
 def get_contactos(db:Session):
     subq = db.query(
