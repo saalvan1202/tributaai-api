@@ -8,7 +8,8 @@ from routes import (administrado_routers,
                     usuarios_routers,
                     derivaciones_routers,
                     login_routers,
-                    mensajes_routers)
+                    mensajes_routers,
+                    contactos_routers,web_socket_router)
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.auth_middleware import AuthMiddleware
 from middleware.error_middleware import ErrorMiddleware
@@ -27,7 +28,6 @@ app.add_middleware(
     allow_methods=["*"],              # métodos permitidos (GET, POST, etc.)
     allow_headers=["*"],             # encabezados permitidos
 )
-
 #Incluyes las rutas de las API
 app.include_router(administrado_routers.router)
 app.include_router(consulta_routers.router)
@@ -42,3 +42,5 @@ app.include_router(usuarios_routers.router)
 app.include_router(derivaciones_routers.router)
 app.include_router(login_routers.router)
 app.include_router(mensajes_routers.router)
+app.include_router(contactos_routers.router)
+app.include_router(web_socket_router.router)

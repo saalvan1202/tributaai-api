@@ -11,3 +11,4 @@ class MensajesSchema(BaseModel):
     text_content:str
     raw_json:dict | list
     timestamp:int
+    
