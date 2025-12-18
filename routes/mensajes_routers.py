@@ -15,7 +15,7 @@ fernet=Fernet(os.getenv("HI_KEY"))
 @router.post("/")
 async def save(data:MensajesSchema,db:Session=Depends(get_db)):
     mensaje=save_mensaje(db,data)
-    json_data=json.dumps(data).encode()
+    json_data=json.dumps(data.model_dump()).encode()
     encriptar=fernet.encrypt(json_data).decode()
     await manager.broadcast({
         "payload":encriptar
