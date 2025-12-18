@@ -4,6 +4,10 @@ from models.mensajes import Mensajes
 from schemas.mensajes_schema import MensajesSchema
 from fastapi.responses import JSONResponse
 from sqlalchemy import func, and_
+import requests
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 def save_mensaje(db:Session,data:MensajesSchema):
     contactos=db.query(Contactos).filter(Contactos.wa_id==data.wa_id).first()
@@ -37,7 +41,7 @@ def get_contactos(db:Session):
     subq = db.query(
     Mensajes.id_contact,
     func.max(Mensajes.id).label("max_id")
-    ).filter(Mensajes.direction=='incoming').group_by(Mensajes.id_contact).subquery()
+    ).group_by(Mensajes.id_contact).subquery()
     ChatAlias = aliased(Mensajes)
     ult_messages = db.query(ChatAlias,Contactos.wa_id,Contactos.nombre).join(
     subq,
@@ -58,6 +62,7 @@ def get_contactos(db:Session):
         contactos.append({
             "id": chat.id,
             "mensaje": chat.text_content,
+            "direction":chat.direction,
             # "fecha": chat.timestamp.isoformat() if chat.timestamp else None,
             "id_contact": chat.id_contact,
             "wa_id": wa_id,
@@ -66,8 +71,62 @@ def get_contactos(db:Session):
 
     return JSONResponse(content=contactos)
 
-def get_messages_chat(db:Session,id_contact:str):
-    mensajes=db.query(Mensajes).filter(Mensajes.id_contact==id_contact).order_by(Mensajes.id.asc()).all()
+def get_messages_chat(db:Session,wa_id:str):
+    mensajes=db.query(Mensajes,Contactos.wa_id
+                      ).join(Contactos,Contactos.id==Mensajes.id_contact
+                             ).filter(Contactos.wa_id==wa_id
+                                      ).order_by(Mensajes.id.asc()
+                                                 ).all()
     if not mensajes:
         return "No se encontró menajes en este chat"
-    return mensajes
+    lista = []
+    for m,wa in mensajes:
+        lista.append({
+            "id_contact": m.id_contact,
+            "direction": m.direction,
+            "message_type": m.message_type,
+            "text_content": m.text_content,
+            "timestamp": m.timestamp,
+            "raw_json": m.raw_json,
+            "waba_message_id": m.waba_message_id,
+        })
+
+    return lista
+
+def send_mensaje(db,data:MensajesSchema):
+    version=os.getenv("VERSION_WPP_API")
+    phone_number_id=os.getenv("ID_PHONE_NUMER_WPP")
+    token=os.getenv("TOKEN_WPP")
+    url = f"https://graph.facebook.com/{version}/{phone_number_id}/messages"
+
+    body = {
+        "messaging_product": "whatsapp",    
+        "recipient_type": "individual",
+        "to": f"{data.wa_id}",
+        "type": "text",
+        "text": {
+            "preview_url": False,
+            "body": f"{data.text_content}"
+        }
+    }
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    response=requests.post(url, json=body, headers=headers)
+
+    if not response.ok:
+        return JSONResponse(content={"error":response.text},status_code=500)
+    obj = response.json()
+    message_id = obj["messages"][0]["id"]
+    data.waba_message_id=message_id
+    data.raw_json=obj
+    mensaje=save_mensaje(db,data)
+    return {
+        "status": "sent",
+        "id": mensaje.id,
+        "waba_message_id": data.waba_message_id
+    }
+
+    
