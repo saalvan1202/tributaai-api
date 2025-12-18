@@ -6,19 +6,23 @@ from fastapi.responses import JSONResponse
 from services.contactos_service import save_mensaje,get_messages_chat,send_mensaje
 from web.web_socket import manager
 import os
-from cryptography.fernet import Fernet
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 import json
+import base64
 
 router=APIRouter(prefix="/api/v1/mensajes",tags=['Mensajes'])
 
-fernet=Fernet(os.getenv("HI_KEY"))
+SECRET_KEY = os.getenv("HI_KEY").encode()[:32]
+IV = b'1234567890123456' 
 @router.post("/")
 async def save(data:MensajesSchema,db:Session=Depends(get_db)):
     mensaje=save_mensaje(db,data)
-    json_data=json.dumps(data.model_dump()).encode()
-    encriptar=fernet.encrypt(json_data).decode()
+    raw = json.dumps(data.model_dump()).encode()
+    cipher = AES.new(SECRET_KEY, AES.MODE_CBC, IV)
+    encrypted = cipher.encrypt(pad(raw, AES.block_size))
     await manager.broadcast({
-        "payload":encriptar
+        "payload":base64.b64encode(encrypted).decode()
     })
     return JSONResponse(content={
         "message":"El mensaje fue enviado correctamente",
