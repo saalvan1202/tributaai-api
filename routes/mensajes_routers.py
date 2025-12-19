@@ -15,14 +15,17 @@ router=APIRouter(prefix="/api/v1/mensajes",tags=['Mensajes'])
 
 SECRET_KEY = os.getenv("HI_KEY").encode()[:32]
 IV = b'1234567890123456' 
-@router.post("/")
-async def save(data:MensajesSchema,db:Session=Depends(get_db)):
-    mensaje=save_mensaje(db,data)
+def encriptar(data):
     raw = json.dumps(data.model_dump()).encode()
     cipher = AES.new(SECRET_KEY, AES.MODE_CBC, IV)
     encrypted = cipher.encrypt(pad(raw, AES.block_size))
+    return base64.b64encode(encrypted).decode()
+@router.post("/")    
+async def save(data:MensajesSchema,db:Session=Depends(get_db)):
+    mensaje=save_mensaje(db,data)
+    payload=encriptar(data)
     await manager.broadcast({
-        "payload":base64.b64encode(encrypted).decode()
+        "payload":payload
     })
     return JSONResponse(content={
         "message":"El mensaje fue enviado correctamente",
@@ -34,5 +37,13 @@ def llamar(wa_id:str,db:Session=Depends(get_db)):
     return get_messages_chat(db,wa_id)
 
 @router.post("/send")
-def send(data:MensajesSchema,db:Session=Depends(get_db)):
-    return send_mensaje(db,data)
+async def send(data:MensajesSchema,db:Session=Depends(get_db)):
+    send=send_mensaje(db,data)
+    payload=encriptar(data)
+    await manager.broadcast({
+            "payload":payload
+    })
+    return JSONResponse(content={
+        "message":"El mensaje fue enviado correctamente",
+        "status":200
+    }) 
