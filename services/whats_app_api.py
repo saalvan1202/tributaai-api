@@ -23,7 +23,7 @@ class Whatsapp():
     
     def waba_text(self,db:Session,telefono,time_wpp,message):
         data={
-            "wa_id":telefono,
+            "wa_id":str(telefono),
             "nombre":"def",
             "id_usuario":1,
             "direction":"outgoing",
@@ -31,7 +31,7 @@ class Whatsapp():
             "message_type":"text",
             "text_content":message,
             "raw_json":"",
-            "timestamp":time_wpp
+            "timestamp":int(time_wpp)
         }
         version=os.getenv("VERSION_WPP_API")
         phone_number_id=os.getenv("ID_PHONE_NUMER_WPP")
@@ -61,10 +61,10 @@ class Whatsapp():
         message_id = obj["messages"][0]["id"]
         data["waba_message_id"]=message_id
         data["raw_json"]=obj
-        return response.text
-        # mensaje=save_mensaje(db,data)
-        # return {
-        #     "status": "sent",
-        #     "id": mensaje.id,
-        #     "waba_message_id": data["waba_message_id"]
-        # }
+        mensaje_schema=MensajesSchema(**data)
+        mensaje=save_mensaje(db,mensaje_schema)
+        return {
+            "status": "sent",
+            "id": mensaje.id,
+            "waba_message_id": data["waba_message_id"]
+        }
