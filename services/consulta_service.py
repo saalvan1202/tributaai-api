@@ -24,7 +24,9 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
             #     return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente. No tienes deudas pedndientes."})
                 return JSONResponse(content={"message":f"La sesion de la consulta del contribuyente vencio y su identidad a sido verificada correctamente"})
         return JSONResponse(content={"message":"La sesion de la consulta del contribuyente vencio"})
-    whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
+    # whatsapp.whats_text(telefono,"📄 Espere un momento, estamos revisando sus deudas...")
+    whatsapp.waba_text(db,telefono,time_now["timestamp"],"📄 Espere un momento, estamos revisando sus deudas...")
+     
     result=ConsultasRepo.consulta_deudas(db,tipo_deudas,administrado.cod_administrado)
     if not result:
         return JSONResponse(content={"message":"El contribuyente no cuenta con deudas en ese momento."})
@@ -32,7 +34,8 @@ def deudas_tributarias(db:Session,telefono:int,dni:int,tipo_deudas:int):
     result_serialized = jsonable_encoder(result)
     data = {"deudas": result_serialized}
     mensaje=ConsultasRepo.generar_mensaje_whatsapp(data)
-    whatsapp.whats_text(telefono, mensaje)
+    # whatsapp.whats_text(telefono, mensaje)
+    whatsapp.waba_text(db,telefono,time_now["timestamp"],mensaje)
     return JSONResponse(content={'message':"El resumen de deudas fue enviado con exito"})
     
     
@@ -111,10 +114,12 @@ def validar_consulta(db:Session,dni:int,telefono:int):
     whatsapp=Whatsapp()
     time_now=time.timeActual()
     fecha = time_now["fecha_validacion"]
-    whatsapp.whats_text(telefono,"*Estoy validando tu documento*. Dame un momento, por favor  🙂")
+    time_wpp=time_now["timestamp"]
+    whatsapp.waba_text(db,telefono,time_wpp,"*Estoy validando tu documento*. Dame un momento, por favor  🙂")
+    # whatsapp.whats_text(telefono,"*Estoy validando tu documento*. Dame un momento, por favor  🙂")
     #------------------------Validamos la identidad del usuario--------------------->
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
-    whatsapp.whats_text(telefono,"Listo 👍")
+    whatsapp.waba_text(db,telefono,time_wpp,"Listo 👍")
     if not administrado:
         return JSONResponse(content={"message": "El contribuyente no existe"})
     ##Se pueda tener varias consultas con el mismo dni y telefono, pero no en la misma fecha
