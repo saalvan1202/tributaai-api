@@ -46,7 +46,7 @@ def validar_codigo_whatsapp(db:Session,codigo:int,dni:int,telefono:int):
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
-    whatsapp.whats_text(telefono,f"*Validando Código...*")
+    whatsapp.waba_text(db,telefono,time_now["timestamp"],"*Validando Código...*")
     consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha).first()
     if consulta_registrada:
         result=ConsultasRepo.tipo_deudas(db,administrado.cod_administrado)
@@ -75,7 +75,7 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
     administrado=db.query(Administrado).filter(Administrado.dni==dni).first()
     if not administrado:
         return JSONResponse(content={"message":"El contribuyente no existe"})
-    whatsapp.whats_text(administrado.telefono,f"*Espere un momento*, estamos registrando su consulta...")
+    whatsapp.waba_text(db,telefono,time_now["timestamp"],f"*Espere un momento*, estamos registrando su consulta...")
     consulta_registrada=db.query(Consulta).filter(Consulta.dni==administrado.dni,Consulta.telefono==telefono,func.date(Consulta.fecha)==fecha_validacion).first()
     if consulta_registrada:
         if consulta_registrada.verificado=='S':
@@ -104,7 +104,7 @@ def registrar_consulta(db:Session,dni:int,descripcion:str,telefono:int):
         if not result:
             return JSONResponse(content={"message":f"Se verifico el que el numero registrado es el mismo en el que se está comunicando. No tienes deudas pendientes","client":str(administrado.nombres)})
         return JSONResponse(content={"message":f"Se verifico el que el numero registrado es el mismo en el que se está comunicando. Tus tipos de deudas son {result}","client":str(administrado.nombres)})
-    whatsapp.whats_text(administrado.telefono,f"Este es su código de verificación: {codigo}")
+    whatsapp.waba_text(db,telefono,time_now["timestamp"],f"Este es su código de verificación: {codigo}")
     db.add(consulta)
     db.commit()
     db.refresh(consulta)
