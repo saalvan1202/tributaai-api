@@ -12,7 +12,6 @@ load_dotenv()
 def save_mensaje(db:Session,data:MensajesSchema):
     contactos=db.query(Contactos).filter(Contactos.wa_id==data.wa_id).first()
     if not contactos:
-        print("no hay contacto")
         contactos=Contactos(
             wa_id=data.wa_id,
             nombre=data.nombre,
