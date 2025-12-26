@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from schemas.derivaciones_schemas import DerivacionSchema
 from fastapi.responses import JSONResponse
 from utils.methods import time
+from schemas.usuario_schema import UsuarioSchema
 
 def get_derivaciones(db:Session):
     derivaciones=db.query(Derivaciones).filter(Derivaciones.estado=="A").all()
@@ -12,6 +13,11 @@ def get_derivaciones(db:Session):
     return derivaciones
 def create_derivaciones(db:Session,data:DerivacionSchema):
     time_actural=time.timeActual()
+    # 1) Primer identificamos los usuario activos
+    usuarios_activos=db.query(Usuarios).filter(Usuarios.activo=='S',Usuarios.empresa_id==data.id_empresa).all()
+    if not usuarios_activos:
+        return JSONResponse(content={"message":"No se encontrarón usuario activos en este momento."})
+    return JSONResponse(content={"message":"Se encontraron los usuarios","usuarios":UsuarioSchema.model_validate(usuarios_activos).model_dump()})
     derivacion=db.query(Derivaciones).filter(Derivaciones.id==data.id,Derivaciones.estado=="A").first()
     if derivacion:
         derivacion.motivo_derivacion=data.motivo_derivacion
