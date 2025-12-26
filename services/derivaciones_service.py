@@ -17,7 +17,7 @@ def create_derivaciones(db:Session,data:DerivacionSchema):
     usuarios_activos=db.query(Usuarios).filter(Usuarios.activo=='S',Usuarios.empresa_id==data.id_empresa).all()
     if not usuarios_activos:
         return JSONResponse(content={"message":"No se encontrarón usuario activos en este momento."})
-    return JSONResponse(content={"message":"Se encontraron los usuarios","usuarios":UsuarioSchema.model_validate(usuarios_activos).model_dump()})
+    return usuarios_activos
     derivacion=db.query(Derivaciones).filter(Derivaciones.id==data.id,Derivaciones.estado=="A").first()
     if derivacion:
         derivacion.motivo_derivacion=data.motivo_derivacion
