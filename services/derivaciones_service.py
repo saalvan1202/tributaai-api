@@ -31,23 +31,27 @@ def create_derivaciones(db:Session,data:DerivacionSchema):
         derivacion.motivo_derivacion=data.motivo_derivacion
         derivacion.id_usuario=data.id_usuario
         derivacion.id_contacto=contacto.id
-        derivacion.observaciones=data.observaciones
         return JSONResponse(content={"message":"El registro fue editado correctamente","data":DerivacionSchema.model_validate(derivacion).model_dump()})
     derivacion=Derivaciones(
         fecha_derivacion=time_actural['fecha_registro'],
         motivo_derivacion=data.motivo_derivacion,
         id_usuario=data.id_usuario,
         id_contacto=contacto.id,
-        observaciones=data.observaciones,
+        observaciones="Esperando...",
         estado='A',
         resuelto='N',
         estado_derivacion='PENDIENTE'
     )
-    db.add(derivacion)
+    db.add(derivacion)  
     db.commit()
     db.refresh(derivacion)
+    mensaje = (
+        f"Necesitamos de tu ayuda para resolver un problema.\n\n"
+        f"👉 Aceptar derivación:\n"
+        f"http://localhost:5173/derivaciones/{derivacion.uuid}"
+    )
     for usuario in usuarios_activos:
-         whatsapp.waba_text(db,usuario.telefono,time_wpp,f"Necesitamos de tu ayuda, para resolver un problema. Ingresa a este link para aceptar.http://localhost:5173/derivaciones/{derivacion.uuid}")
+         whatsapp.waba_text(db,usuario.telefono,time_wpp,mensaje)
     return "Estamos buscando.."
     return JSONResponse(content={"message":"La derivación se realizó correctamente","data":DerivacionSchema.model_validate(derivacion).model_dump()})
 

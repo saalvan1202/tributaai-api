@@ -5,7 +5,6 @@ class DerivacionSchema(BaseModel):
     id_usuario:int
     telefono:str
     motivo_derivacion:str
-    observaciones:str
     id_empresa:int
     class Config:
         from_attributes = True 
