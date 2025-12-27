@@ -47,7 +47,7 @@ def create_derivaciones(db:Session,data:DerivacionSchema):
     db.commit()
     db.refresh(derivacion)
     for usuario in usuarios_activos:
-         whatsapp.waba_text(db,usuario.telefono,time_wpp,"Necesitamos de tu ayuda, para resolver un problema. Ingresa a este link para aceptar.")
+         whatsapp.waba_text(db,usuario.telefono,time_wpp,f"Necesitamos de tu ayuda, para resolver un problema. Ingresa a este link para aceptar.http://localhost:5173/derivaciones/{derivacion.uuid}")
     return "Estamos buscando.."
     return JSONResponse(content={"message":"La derivación se realizó correctamente","data":DerivacionSchema.model_validate(derivacion).model_dump()})
 
