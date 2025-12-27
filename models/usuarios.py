@@ -13,5 +13,6 @@ class Usuarios(Base):
     password=Column(String,nullable=False)
     activo=Column(String(1),nullable=False)
     apellidos=Column(String(100),nullable=False)
+    telefono=Column(String(20),nullable=False)
     #Para crear al tabla al ejecutar 
 Base.metadata.create_all(engine)

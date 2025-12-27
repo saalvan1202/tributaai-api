@@ -40,6 +40,7 @@ def create_usuarios(db:Session,data:UsuarioSchema):
         usuario.rol_id=data.rol_id
         usuario.usuario=data.usuario
         usuario.apellidos=data.apellidos,
+        usuario.telefono=data.telefono
         db.commit()
         db.refresh(usuario)
         return JSONResponse(content={"message":"El usuario fue actualizado correctamente","data":UsuarioSchema.model_validate(usuario).model_dump()})
@@ -51,6 +52,7 @@ def create_usuarios(db:Session,data:UsuarioSchema):
         rol_id=data.rol_id,
         activo='N',
         usuario=data.usuario,
+        telefono=data.telefono,
         password=hash_password(data.password),
         estado='A'
     )
