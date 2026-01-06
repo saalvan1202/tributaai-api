@@ -7,7 +7,7 @@ from services.agente_empresa_service import (get_agente_empresa,
                                              get_agentes_asignados_empresa_path,
                                              edit_agentes_asignados_empresa,
                                              estado_agentes_asignados_empresa)
-from schemas.agente_empresa_schema import AgenteEmpresaCreate,AgenteEmpresaComunicate,AgenteEmpresaEstado
+from schemas.agente_empresa_schema import AgenteEmpresaCreate,AgenteEmpresaComunicate,AgenteEmpresaEstado,AgenteValidate
 
 router=APIRouter(prefix="/api/v1/agente-empresa",tags=["Agente Empresa"])
 
@@ -20,9 +20,9 @@ def create(data:AgenteEmpresaCreate,db:Session=Depends(get_db)):
 @router.get("/{id_empresa}")
 def llamar_agente_asignados_empresas(id_empresa:int,db:Session=Depends(get_db)):
     return get_agentes_asignados_empresa(db,id_empresa)
-@router.get("/{id_empresa}/{path}")
-def llamar_agente_asignados_empresas_path(path:str,id_empresa:int,db:Session=Depends(get_db)):
-    return get_agentes_asignados_empresa_path(db,id_empresa,path)
+@router.get("/validate-agente")
+def llamar_agente_asignados_empresas_path(data:AgenteValidate,db:Session=Depends(get_db)):
+    return get_agentes_asignados_empresa_path(db,data.id_empresa,data.path,data.telefono)
 @router.post("/edit-comunicate")
 def cambiar_comunicate_agente(data:AgenteEmpresaComunicate,db:Session=Depends(get_db)):
     return edit_agentes_asignados_empresa(db,data)

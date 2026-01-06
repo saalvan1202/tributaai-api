@@ -4,6 +4,8 @@ from models.agente_empresa import AgenteEmpresa
 from models.empresa import Empresa
 from models.agentes import Agente
 from fastapi.responses import JSONResponse
+from models.derivaciones import Derivaciones
+from models.contactos import Contactos
 
 def get_agente_empresa(db:Session):
     result={}
@@ -115,7 +117,7 @@ def get_agentes_asignados_empresa(db:Session,id_empresa:int):
     ]
     return agentes_list
 
-def get_agentes_asignados_empresa_path(db:Session,id_empresa:int,path:str):
+def get_agentes_asignados_empresa_path(db:Session,id_empresa:int,path:str,telefono:int):
     agentes_asignados=db.query(Agente.id,
                                Agente.nombre,
                                Agente.descripcion,
@@ -133,7 +135,12 @@ def get_agentes_asignados_empresa_path(db:Session,id_empresa:int,path:str):
                                                Agente.path==path).first()
     if not agentes_asignados:
         return JSONResponse(content={"message":"No se encontraron agentes asignados"})
-    return dict(agentes_asignados._mapping)
+    estado_derivacion=db.query(Derivaciones,Contactos
+                               ).join(Contactos,Contactos.id==Derivaciones.id_contacto
+                                      ).filter(Contactos.wa_id==telefono,Derivaciones.estado_derivacion=='ATENDIENDO').first()
+    data=dict(agentes_asignados._mapping)
+    data["estado_derivacion"] = False if estado_derivacion else True
+    return data
 
 def edit_agentes_asignados_empresa(db:Session,data:AgenteEmpresaComunicate):
     agentes_asignados=db.query(AgenteEmpresa).filter(AgenteEmpresa.id==data.id_agente_empresa).first()

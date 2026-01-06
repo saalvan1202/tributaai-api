@@ -20,3 +20,8 @@ class AgenteEmpresaComunicate(BaseModel):
 class AgenteEmpresaEstado(BaseModel):
     id_agente_empresa:int
     estado:str
+    
+class AgenteValidate(BaseModel):
+    id_empresa:int
+    path:str
+    telefono:str
