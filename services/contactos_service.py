@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import func, and_
 import requests
 from dotenv import load_dotenv
+from security.security import verify_token
+from models.derivaciones import Derivaciones
 import os
 load_dotenv()
 
@@ -37,7 +39,11 @@ def save_mensaje(db:Session,data:MensajesSchema):
     db.refresh(mensaje)
     return mensaje   
 
-def get_contactos(db:Session):
+def get_contactos(db:Session,token:str):
+    usuario=verify_token(token)
+    if not usuario:
+        return JSONResponse(content={"message":"No se encontró el usuario"})
+    derivaciones=db.query(Derivaciones.id_contacto).filter(Derivaciones.id_usuario==usuario["id_usuario"],Derivaciones.estado=='A',Derivaciones.estado_derivacion=="ATENDIENDO").subquery()
     subq = db.query(
     Mensajes.id_contact,
     func.max(Mensajes.id).label("max_id")
@@ -50,7 +56,7 @@ def get_contactos(db:Session):
         ChatAlias.id == subq.c.max_id
     )
     ).join(
-        Contactos,Contactos.id==ChatAlias.id_contact).filter(Contactos.estado=='A').all()
+        Contactos,Contactos.id==ChatAlias.id_contact).filter(Contactos.estado=='A',Contactos.id.in_(derivaciones)).all()
     #sessions = [{"id":row[0],"avatar": random.randint(0, 4),"ult_message":ult_messages}for row in result]
     if not ult_messages:
         return JSONResponse(content={

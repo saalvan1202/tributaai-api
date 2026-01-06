@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 class Derivaciones(Base):
     __tablename__='derivaciones'
     id=Column(Integer,primary_key=True,index=True,autoincrement=True)
-    id_usuario=Column(Integer,nullable=False)
+    id_usuario=Column(Integer,nullable=True)
     id_contacto=Column(Integer,nullable=False)
     motivo_derivacion=Column(String,nullable=False)
     fecha_derivacion=Column(DateTime,nullable=False)

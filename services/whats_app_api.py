@@ -24,7 +24,7 @@ class Whatsapp():
     def waba_text(self,db:Session,telefono,time_wpp,message):
         telefono_str=str(telefono)
         data={
-            "wa_id":"51"+telefono_str,
+            "wa_id":telefono_str,
             "nombre":"def",
             "id_usuario":1,
             "direction":"outgoing",

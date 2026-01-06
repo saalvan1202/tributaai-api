@@ -1,13 +1,14 @@
 from models.derivaciones import Derivaciones
 from models.usuarios import Usuarios
 from sqlalchemy.orm import Session
-from schemas.derivaciones_schemas import DerivacionSchema
+from schemas.derivaciones_schemas import DerivacionSchema,AceptarDerivacionSchema
 from fastapi.responses import JSONResponse
 from utils.methods import time
 from schemas.usuario_schema import UsuarioSchema
 from services.whats_app_api import Whatsapp
 from models.contactos import Contactos
 from uuid import UUID
+from security.security import verify_token
 
 def get_derivaciones(db:Session):
     derivaciones=db.query(Derivaciones).filter(Derivaciones.estado=="A").all()
@@ -29,13 +30,13 @@ def create_derivaciones(db:Session,data:DerivacionSchema):
     derivacion=db.query(Derivaciones).filter(Derivaciones.id==data.id,Derivaciones.estado=="A").first()
     if derivacion:
         derivacion.motivo_derivacion=data.motivo_derivacion
-        derivacion.id_usuario=data.id_usuario
+        # derivacion.id_usuario=data.id_usuario
         derivacion.id_contacto=contacto.id
         return JSONResponse(content={"message":"El registro fue editado correctamente","data":DerivacionSchema.model_validate(derivacion).model_dump()})
     derivacion=Derivaciones(
         fecha_derivacion=time_actural['fecha_registro'],
         motivo_derivacion=data.motivo_derivacion,
-        id_usuario=data.id_usuario,
+        # id_usuario=data.id_usuario,
         id_contacto=contacto.id,
         observaciones="Esperando...",
         estado='A',
@@ -79,3 +80,40 @@ def delete_derivacion(db:Session,id:int):
     derivacion.estado='I'
     db.commit()
     return JSONResponse(content={"message":"Derivación eliminada correctamente"})
+
+def aceptar_derivacion(db:Session,data:AceptarDerivacionSchema):
+    whatsapp=Whatsapp()
+    time_actural=time.timeActual()
+    time_wpp=time_actural["timestamp"]
+    enviado_wpp=False
+    derivacion=db.query(Derivaciones).filter(Derivaciones.uuid==data.uuid).first()
+    if not derivacion:
+        return JSONResponse(content={"message":"La derivación no existe"})
+    if derivacion.estado_derivacion!="PENDIENTE":
+        return JSONResponse(content={"message":"La derivación ya está siendo atendida"})
+    data_usuario=verify_token(data.token)
+    if not data_usuario:
+        return JSONResponse(content={"message":"No se encontró ningún usuario"})
+    derivacion.id_usuario=data_usuario["id_usuario"]
+    derivacion.estado_derivacion="ATENDIENDO"
+    derivacion.fecha_atencion=time_actural['fecha_registro'],
+    contacto=db.query(Contactos).filter(Contactos.id==derivacion.id_contacto).first()
+    if not contacto:
+        return JSONResponse(content={"message":"No se encontró el contacto"})
+    nombre_usuario=data_usuario["nombre"]
+    try:
+        whatsapp.waba_text(
+        db,
+        contacto.wa_id,
+        time_wpp,
+        f"¡Hola! 👋 Soy {nombre_usuario}, estoy aquí para ayudarte con lo que necesites 👍."
+        )
+        enviado_wpp=True
+    except Exception as e:
+    # Loggear error, pero no romper el flujo
+        print("Error enviando WhatsApp:", e)
+    #whatsapp.waba_text(db,contacto.wa_id,time_wpp,f"¡Hola! 👋 Soy  {nombre_usuario}, estoy aquí para ayudarte con  lo que necesites 👍.")
+    db.commit()
+    db.refresh(derivacion)
+    return JSONResponse(content={"message":"La derivación se aceptó correctamente","status":200,"enviado_wpp":enviado_wpp,"wa_id":contacto.wa_id})
+    
