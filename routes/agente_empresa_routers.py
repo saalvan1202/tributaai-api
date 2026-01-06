@@ -20,7 +20,7 @@ def create(data:AgenteEmpresaCreate,db:Session=Depends(get_db)):
 @router.get("/{id_empresa}")
 def llamar_agente_asignados_empresas(id_empresa:int,db:Session=Depends(get_db)):
     return get_agentes_asignados_empresa(db,id_empresa)
-@router.get("/validate-agente")
+@router.post("/validate-agente")
 def llamar_agente_asignados_empresas_path(data:AgenteValidate,db:Session=Depends(get_db)):
     return get_agentes_asignados_empresa_path(db,data)
 @router.post("/edit-comunicate")
