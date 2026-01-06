@@ -22,7 +22,7 @@ def llamar_agente_asignados_empresas(id_empresa:int,db:Session=Depends(get_db)):
     return get_agentes_asignados_empresa(db,id_empresa)
 @router.get("/validate-agente")
 def llamar_agente_asignados_empresas_path(data:AgenteValidate,db:Session=Depends(get_db)):
-    return get_agentes_asignados_empresa_path(db,data.id_empresa,data.path,data.telefono)
+    return get_agentes_asignados_empresa_path(db,data)
 @router.post("/edit-comunicate")
 def cambiar_comunicate_agente(data:AgenteEmpresaComunicate,db:Session=Depends(get_db)):
     return edit_agentes_asignados_empresa(db,data)
